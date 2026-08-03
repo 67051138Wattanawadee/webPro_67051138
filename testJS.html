@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript DOM & Event Lab</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            line-height: 1.6; 
+        }
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        .card { 
+            border: 1px solid #ccc; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 10px; 
+        }
+        .highlight { 
+            background-color: #fff3cd; 
+            border-color: #ffeeba; 
+        }
+        .text-danger { 
+            color: red; 
+        }
+    </style>
+</head>
+
+<body>
+    <h2>ฟอร์มลงทะเบียนสมาชิก (Registration Form)</h2>
+
+    <form id="regForm">
+        <div class="form-group">
+            <label>ชื่อ-นามสกุล:</label>
+            <input type="text" id="fullname" class="input-field" placeholder="กรอกชื่อ-นามสกุล">
+            <span id="nameError" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>แผนก/สาขา:</label>
+            <select id="department" class="input-field">
+                <option value="">-- เลือกแผนก --</option>
+                <option value="IT">เทคโนโลยีสารสนเทศ</option>
+                <option value="MKT">การตลาด</option>
+                <option value="HR">ทรัพยากรบุคคล</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>ระดับประสบการณ์:</label><br>
+            <input type="radio" name="level" value="Junior" class="user-level"> Junior
+            <input type="radio" name="level" value="Senior" class="user-level"> Senior
+        </div>
+
+        <div class="form-group">
+            <label>ทักษะความสามารถ (เลือกได้มากกว่า 1):</label><br>
+            <input type="checkbox" name="skills" value="HTML/CSS"> HTML/CSS
+            <input type="checkbox" name="skills" value="JavaScript"> JavaScript
+            <input type="checkbox" name="skills" value="Database"> Database
+        </div>
+
+        <div class="form-group">
+            <label>โปรไฟล์รูปภาพ (URL):</label>
+            <input type="text" id="avatarUrl" placeholder="วางลิงก์รูปภาพที่นี่">
+        </div>
+
+        <button type="button" id="btnPreview">ดูตัวอย่างข้อมูล</button>
+        <button type="submit" id="btnSubmit">ลงทะเบียน</button>
+    </form>
+
+    <hr>
+
+    <h3>พื้นที่แสดงผล (Preview Area)</h3>
+    
+    <div id="previewCard" class="card">
+        <img id="avatarImg" src="https://via.placeholder.com/100" alt="Profile" width="100">
+        <h4 id="dispName">ชื่อ: -</h4>
+        <p id="dispDept">แผนก: -</p>
+        <p id="dispDetails">รายละเอียด: -</p>
+        <div id="jsonResult"></div>
+    </div>
+
+    <!-- เขียน JavaScript ไว้ด้านล่างสุด -->
+    <script>
+        // โค้ด JavaScript ในแต่ละข้อจะถูกเขียนบริเวณนี้
+        
+        // //ส่วนที่2
+        // //1.ดึงปุ่มนั้นมาจากหน้าเว็บมาดูข้อมูลข้างใน
+        // //มันจะคืนค่ามาเป็น elements เดียวๆ ปุ่มเดียว
+        // let btnPreviews = document.getElementById('btnPreview')
+        // console.log(btnPreviews)
+
+        // //2.หน้าเวปมีที่ป้อนข้อมูล class="input-field"
+        // //จะหาช่องที่มี ชื่อclassนี้ทั้งหมด มาให้เรา
+        // let inputField = document.getElementsByClassName('input-field')
+        // console.log(inputField)
+
+        // //3.อันนี้คือหยิบมาแค่ตัวเดียวดึง Element ในหน้าเว็บโดยใช้ รูปแบบ CSS Selector
+        // let radioButton = document.querySelector('input[name ="level"]')
+        // console.log(radioButton)
+
+        // //4.หยิบมาทุกตัว แล้วส่งกลับมาที่ NodeList
+        // let checkBox = document.querySelectorAll('input[name ="skills"]')
+        // console.log(checkBox)
+        // //แบบforEach
+        // checkBox.forEach(function(checkbox){
+        //     console.log(checkbox);
+        //     console.log(checkbox.value);
+        // });
+
+
+        //ส่วนที่3
+        //onclick คือclickที่ป่ม ดูตัวอย่างข้อมูลแล้วมันขึ้นalert sth
+        btnPreview.onclick = function(){
+            alert('กำลังประมวลผล...');
+        };
+
+        //onchange
+        document.getElementById('department').onchange = function(){
+            let selectedvalue = this.value
+            console.log("Selected Value: ", selectedvalue)
+            document.getElementById('dispDept').textContent = 'แผนก: ' + (selectedvalue || '-');
+        }
+
+        //onkeyup
+        let fnInput = document.getElementById('fullname')
+        let  error = document.getElementById('nameError')
+        fnInput.onkeyup = function(){
+            if(this.value.length <=3){
+                error.textContent = 'ชื่อต้องยาวอย่างน้อย 3ตัวอักษร'
+            }else error.textContent = 'ผ่าน'
+        }
+
+        //mouse-ish
+        let pvCard = document.getElementById('previewCard')
+        pvCard.onmouseover = function(){
+            pvCard.style.backgroundColor = 'pink'
+        }
+
+        pvCard.onmouseout = function(){
+            pvCard.style.backgroundColor = ''
+        }
+
+        //addEventListener
+        const regForm = document.getElementById('regForm');
+            regForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // ยบัย้งัการ Refresh หน้าจอของ Form
+            console.log("Event Type:", event.type);
+            console.log("Target Element:", event.target);
+        });
+        
+        //ส่วนที่4.1
+        //1)
+        let dispName = document.getElementById('dispName')
+        fnInput.addEventListener('input', function(){
+            dispName.textContent = 'ชื่อ: ' + fnInput.value;
+            // dispName.innerText = 'ชื่อ: ' + fnInput.value;
+            // dispName.innerHTML = 'ชื่อ: ' + fnInput.value;
+        });
+
+        //2)
+        //<ul> คือ กล่องใหญ่ที่คุมรายการทั้งหมด
+        //<li> คือ เนื้อหาแต่ละบรรทัด เป็นbullet points
+        //ดึงข้อมูลจาก checkbox
+        let skills = document.querySelectorAll('input[name ="skills"]')
+        let dispDetails = document.getElementById('dispDetails')
+        skills.forEach(function(i){
+            i.addEventListener('change', function(){
+                let listHTML =''
+                skills.forEach(function(skill){
+                    if (skill.checked) {
+                    listHTML += '<li>' + skill.value + '</li>';
+                    }
+
+                });
+                dispDetails.innerHTML = '<ul>' + listHTML + '</ul>';
+            });
+        });
+
+        //ส่วนที่4.2
+        let avatarUrl = document.getElementById('avatarUrl')
+        let avatarImg = document.getElementById('avatarImg')
+        avatarUrl.addEventListener('input', function(){
+            let formerUrl = avatarImg.getAttribute('src')
+            let newUrl = avatarUrl.value
+
+            if(newUrl.trim() !== ''){
+                avatarImg.setAttribute('src', newUrl)
+            }else{
+                avatarImg.setAttribute('src', formerUrl)
+            }
+        })
+
+
+        //ส่วนที่4 workshop
+        let jsonResult = document.getElementById('jsonResult')
+        regForm.addEventListener('submit', function(event){
+            event.preventDefault();
+
+            let fnVal = fnInput.value
+            let departmentVal = document.getElementById('department').value
+            let avatarUrlVal = avatarUrl.value
+
+            // 5.เงื่อนไขตรวจสอบ valid
+            if (fnVal === '' || departmentVal === '') {
+                    alert('กรุณากรอกชื่อ และเลือกแผนกก่อนลงทะเบียน!');
+                    return; // หยุดการทำงาน ไม่สร้าง Object
+            }
+            // ดึงค่า Level (Radio)
+            let levelInput = document.querySelector('input[name="level"]:checked');
+            let levelVal = levelInput ? levelInput.value : 'ไม่ได้ระบุ';
+
+            // ดึงค่า Skills (Checkbox) มาเก็บใส่ Array
+            let skillsArr = [];
+            let checkedSkills = document.querySelectorAll('input[name="skills"]:checked');
+            for (let i = 0; i < checkedSkills.length; i++) {
+                skillsArr.push(checkedSkills[i].value);
+            }
+
+            // 3. เอาข้อมูลทั้งหมดมารวมกันเป็น Object
+            const userData = {
+                fullname: fnVal,
+                department: departmentVal,
+                level: levelVal,
+                skills: skillsArr,
+                avatar: avatarUrlVal
+            };
+
+            // 4. โชว์ผลลัพธ์ใน Console และ แปะลงหน้าเว็บ
+            console.log(userData);
+            // document.getElementById('jsonResult').innerHTML = '<pre>' + JSON.stringify(userData, null, 2) + '</pre>';
+        });
+
+    </script>
+</body>
+</html>
